@@ -1,0 +1,118 @@
+{
+  "genre_map": {
+    "business": 6000,
+    "weather": 6001,
+    "utilities": 6002,
+    "travel": 6003,
+    "sports": 6004,
+    "lifestyle": 6005,
+    "reference": 6006,
+    "productivity": 6007,
+    "photo_video": 6008,
+    "news": 6009,
+    "navigation": 6010,
+    "music": 6011,
+    "health_fitness": 6013,
+    "finance": 6015,
+    "entertainment": 6016,
+    "education": 6017,
+    "books": 6018,
+    "medical": 6020,
+    "magazines_newspapers": 6021,
+    "catalogs": 6022,
+    "shopping": 6024,
+    "social_networking": 6005,
+    "food_drink": 6023,
+    "games": 6014
+  },
+  "benchmarks": {
+    "default": {
+      "title_keyword_usage": {
+        "min": 1,
+        "target": 2
+      },
+      "description_length": {
+        "min": 500,
+        "target": 2000
+      },
+      "keyword_density": {
+        "min": 2,
+        "optimal": 5,
+        "max": 8
+      },
+      "average_rating": {
+        "min": 3.5,
+        "target": 4.5
+      },
+      "ratings_count": {
+        "min": 100,
+        "target": 5000
+      },
+      "keywords_top_10": {
+        "min": 2,
+        "target": 10
+      },
+      "keywords_top_50": {
+        "min": 5,
+        "target": 20
+      },
+      "conversion_rate": {
+        "min": 0.02,
+        "target": 0.10
+      },
+      "screenshots": {
+        "min": 3,
+        "target": 5
+      },
+      "has_video": {
+        "target": true
+      }
+    },
+    "competitive": {
+      "average_rating": {
+        "min": 4.2,
+        "target": 4.7
+      },
+      "ratings_count": {
+        "min": 1000,
+        "target": 50000
+      },
+      "keywords_top_10": {
+        "min": 5,
+        "target": 25
+      },
+      "screenshots": {
+        "min": 5,
+        "target": 8
+      }
+    },
+    "niche": {
+      "average_rating": {
+        "min": 3.0,
+        "target": 4.0
+      },
+      "ratings_count": {
+        "min": 10,
+        "target": 500
+      },
+      "keywords_top_10": {
+        "min": 1,
+        "target": 5
+      }
+    },
+    "utility": {
+      "conversion_rate": {
+        "min": 0.05,
+        "target": 0.15
+      },
+      "average_rating": {
+        "min": 3.5,
+        "target": 4.3
+      },
+      "description_length": {
+        "min": 300,
+        "target": 1000
+      }
+    }
+  }
+}
