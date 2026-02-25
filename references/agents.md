@@ -1,166 +1,56 @@
-# Agent Integration Note
+# ASO Agent Coordination Guide
 
-**Location:** `.gemini/skills/aso/`
-**Purpose:** Agent-integrated version of the ASO skill
+This guide explains how specialized agents can coordinate using the Gemini ASO toolkit to perform complex, multi-stage App Store Optimization tasks.
 
----
+## Agent Roles & Script Mapping
 
-## Dual Structure Explanation
+The toolkit is designed for modularity, allowing different agents to handle specific parts of the ASO lifecycle:
 
-This project maintains **two copies** of the ASO skill:
-
-### 1. Standalone Skill (Distributable)
-**Location:** `app-store-optimization/`
-**Purpose:**
-- Standalone skill package
-- Users can copy this folder to `~/.gemini/skills/` or project `.gemini/skills/`
-- Independent of the agent system
-- Can be distributed separately
-
-### 2. Agent-Integrated Skill (Project-Specific)
-**Location:** `.gemini/skills/aso/` (THIS FOLDER)
-**Purpose:**
-- Used by ASO agents (aso-master, aso-research, aso-optimizer, aso-strategist)
-- Agents reference Python modules from this location
-- Integrated with agent workflow
-- Project-specific implementation
+| Agent Role | Responsibility | Primary Scripts |
+| :--- | :--- | :--- |
+| **ASO Researcher** | Market and keyword discovery | `scripts/keyword_analyzer.py`, `scripts/lib/discovery.py` |
+| **ASO Optimizer** | Metadata generation and validation | `scripts/metadata_optimizer.py`, `scripts/lib/itunes_api.py` |
+| **ASO Strategist** | Health scoring and action planning | `scripts/aso_scorer.py`, `scripts/lib/reporter.py` |
 
 ---
 
-## Why Two Copies?
+## Coordinated Workflows
 
-**Separation of Concerns:**
-- `app-store-optimization/` = Skill as a **tool** (reusable, distributable)
-- `.gemini/skills/aso/` = Skill as **agent resource** (project-integrated)
+### 1. The Full Market Audit Workflow
+An agent (e.g., "ASO Master") can orchestrate a full audit by chaining these tools:
 
-**Use Cases:**
+1.  **Phase 1 (Discovery):** Use `DiscoveryEngine` to find the top 10 competitors in a category (e.g., "Productivity").
+2.  **Phase 2 (Analysis):** Pass the discovered data to `scripts/competitor_analyzer.py` to identify keyword gaps.
+3.  **Phase 3 (Strategy):** Use `scripts/aso_scorer.py --format markdown` to generate a visual dashboard with prioritized actions.
 
-**Use Case 1: Standalone Skill**
-```bash
-# User installs skill globally
-cp -r app-store-optimization ~/.gemini/skills/
-
-# Gemini Code loads skill
-# User: "Hey Gemini—I just added the app-store-optimization skill..."
-# Gemini uses Python modules directly
-```
-
-**Use Case 2: Agent-Coordinated Workflow**
-```bash
-# Agents installed
-cp .gemini/agents/aso/*.md ~/.gemini/agents/
-
-# User: /aso-full-audit MyApp
-# aso-master → aso-research → uses .gemini/skills/aso/keyword_analyzer.py
-# Complete workflow with coordination
-```
+### 2. The International Expansion Workflow
+1.  **Phase 1:** Use `DiscoveryEngine(country="jp")` to understand the local Japanese market.
+2.  **Phase 2:** Pass findings to `scripts/localization_helper.py` to plan the translation and cultural adaptation strategy.
 
 ---
 
-## Agent References
+## Technical Handoff Examples
 
-All ASO agents reference this location:
+Agents should pass data between themselves using the standardized JSON format defined in `references/sample_input.json`.
 
-**aso-research.md:**
-```bash
-cd .gemini/skills/aso
-python3 keyword_analyzer.py < input.json
-python3 competitor_analyzer.py < input.json
+**Example: Researcher to Optimizer Handoff**
+```json
+{
+  "discovered_keywords": ["task manager", "todo list", "productivity"],
+  "competitor_metadata": [...],
+  "target_platform": "apple"
+}
 ```
 
-**aso-optimizer.md:**
-```bash
-cd .gemini/skills/aso
-python3 metadata_optimizer.py < input.json
-python3 ab_test_planner.py < input.json
-```
+## Best Practices for Agent Developers
 
-**aso-strategist.md:**
-```bash
-cd .gemini/skills/aso
-python3 aso_scorer.py < input.json
-python3 launch_checklist.py < input.json
-```
-
----
-
-## Keeping Synchronized
-
-If you update Python modules:
-
-**Option A: Update Both**
-```bash
-# Make changes in app-store-optimization/
-# Then copy to agent version
-cp -r app-store-optimization/* .gemini/skills/aso/
-```
-
-**Option B: Symlink (Advanced)**
-```bash
-# Remove agent copy
-rm -rf .gemini/skills/aso
-
-# Create symlink
-ln -s ../../app-store-optimization .gemini/skills/aso
-
-# Now agents use the original directly
-```
-
-**Recommended:** Keep separate for stability. Update both when changes are needed.
-
----
-
-## File Structure
-
-```
-aeo-skill/
-├── app-store-optimization/        # STANDALONE SKILL (distributable)
-│   ├── SKILL.md
-│   ├── *.py                       # 8 Python modules
-│   └── lib/                       # Data fetching utilities
-│
-└── .gemini/
-    ├── skills/aso/                # AGENT-INTEGRATED (project-specific)
-    │   ├── SKILL.md               # Same as above
-    │   ├── *.py                   # Same Python modules
-    │   ├── lib/                   # Same utilities
-    │   └── AGENT-INTEGRATION.md   # This file
-    │
-    ├── agents/aso/                # Agents that USE the skill
-    │   ├── aso-master.md          # References ../skills/aso/
-    │   ├── aso-research.md
-    │   ├── aso-optimizer.md
-    │   └── aso-strategist.md
-    │
-    └── commands/aso/              # Slash commands invoke agents
-        ├── aso-full-audit.md
-        ├── aso-optimize.md
-        ├── aso-prelaunch.md
-        └── aso-competitor.md
-```
-
----
-
-## For Developers
-
-When adding new Python modules:
-
-1. **Add to `app-store-optimization/`** (primary)
-2. **Copy to `.gemini/skills/aso/`** (agent version)
-3. **Update agent definitions** if new modules are used
-4. **Update SKILL.md** in both locations
-5. **Test both workflows:**
-   - Standalone: Direct Python module usage
-   - Agent-coordinated: `/aso-full-audit` command
+1.  **Stateless Execution:** Each script is a "pure function" (JSON in → JSON out). Agents should maintain the session state and pass only what's needed.
+2.  **Format Selection:**
+    *   Use **JSON** for internal agent-to-agent communication.
+    *   Use **Markdown** (via `--format markdown`) only when the agent is presenting the final results to the user.
+3.  **Validation First:** Agents should always run `scripts/metadata_optimizer.py` to validate metadata against store limits before suggesting it to a user.
 
 ---
 
 ## Summary
-
-- **Two copies** of the ASO skill exist
-- **app-store-optimization/** = Standalone, distributable
-- **.gemini/skills/aso/** = Agent-integrated, project-specific
-- **Agents always use** `.gemini/skills/aso/`
-- **Keep synchronized** when making updates
-
-This architecture ensures the skill can work **both ways**: as a standalone tool and as part of the coordinated agent system.
+The Gemini ASO toolkit is optimized for **Agentic Workflows**. By treating each script as a specialized "skill," agents can solve complex optimization problems that would be difficult for a general-purpose LLM alone.
